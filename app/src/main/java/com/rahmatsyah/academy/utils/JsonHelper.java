@@ -1,4 +1,4 @@
-package com.rahmatsyah.academy.data.source.remote;
+package com.rahmatsyah.academy.utils;
 
 import android.app.Application;
 

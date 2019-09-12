@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.rahmatsyah.academy.R;
 import com.rahmatsyah.academy.data.source.local.entity.ModuleEntity;
@@ -67,13 +68,23 @@ public class ModuleListFragment extends Fragment implements MyAdapterClickListen
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         if (getActivity() != null) {
-            progressBar.setVisibility(View.VISIBLE);
             viewModel = obtainViewModel(getActivity());
             adapter = new ModuleListAdapter(this);
-            viewModel.getModules().observe(this, moduleEntities -> {
-                if (moduleEntities!=null){
-                    progressBar.setVisibility(View.GONE);
-                    populateRecyclerView(moduleEntities);
+            viewModel.modules.observe(this, moduleEntities -> {
+                if (moduleEntities != null) {
+                    switch (moduleEntities.status) {
+                        case LOADING:
+                            progressBar.setVisibility(View.VISIBLE);
+                            break;
+                        case SUCCESS:
+                            progressBar.setVisibility(View.GONE);
+                            populateRecyclerView(moduleEntities.data);
+                            break;
+                        case ERROR:
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(getContext(), "Terjadi kesalahan", Toast.LENGTH_SHORT).show();
+                            break;
+                    }
                 }
             });
         }

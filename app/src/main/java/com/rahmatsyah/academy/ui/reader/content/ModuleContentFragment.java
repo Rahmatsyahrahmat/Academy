@@ -13,9 +13,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
+import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.rahmatsyah.academy.R;
+import com.rahmatsyah.academy.data.source.local.entity.ContentEntity;
 import com.rahmatsyah.academy.data.source.local.entity.ModuleEntity;
 import com.rahmatsyah.academy.ui.reader.CourseReaderViewModel;
 import com.rahmatsyah.academy.viewmodel.ViewModelFactory;
@@ -31,6 +34,9 @@ public class ModuleContentFragment extends Fragment {
     private WebView webView;
     private ProgressBar progressBar;
     private CourseReaderViewModel viewModel;
+
+    private Button btnNext;
+    private Button btnPrev;
 
 
     public ModuleContentFragment() {
@@ -61,6 +67,8 @@ public class ModuleContentFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         webView = view.findViewById(R.id.web_view);
         progressBar = view.findViewById(R.id.progress_bar);
+        btnNext = view.findViewById(R.id.btn_next);
+        btnPrev = view.findViewById(R.id.btn_prev);
     }
 
     @Override
@@ -69,17 +77,56 @@ public class ModuleContentFragment extends Fragment {
         if (getActivity() != null) {
             viewModel = obtainViewModel(getActivity());
             progressBar.setVisibility(View.VISIBLE);
-            viewModel.getSelectedModule().observe(this, moduleEntity -> {
+            viewModel.selectedModule.observe(this, moduleEntity -> {
                 if (moduleEntity != null) {
-                    progressBar.setVisibility(View.GONE);
-                    populateWebView(moduleEntity);
+                    switch (moduleEntity.status) {
+                        case LOADING:
+                            progressBar.setVisibility(View.VISIBLE);
+                            break;
+                        case SUCCESS:
+                            if (moduleEntity.data != null) {
+                                setButtonNextPrevState(moduleEntity.data);
+                                progressBar.setVisibility(View.GONE);
+                                if (!moduleEntity.data.isRead()) {
+                                    viewModel.readContent(moduleEntity.data);
+                                }
+
+                                if (moduleEntity.data.contentEntity != null) {
+                                    populateWebView(moduleEntity.data.contentEntity);
+                                }
+                            }
+                            break;
+                        case ERROR:
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(getContext(), "Terjadi kesalahan", Toast.LENGTH_SHORT).show();
+                            break;
+                    }
                 }
             });
+
+            btnNext.setOnClickListener(v -> viewModel.setNextPage());
+
+            btnPrev.setOnClickListener(v -> viewModel.setPrevPage());
         }
     }
 
-    private void populateWebView(ModuleEntity content) {
-        webView.loadData(content.contentEntity.getContent(), "text/html", "UTF-8");
+    private void populateWebView(ContentEntity content) {
+        webView.loadData(content.getContent(), "text/html", "UTF-8");
+    }
+
+    private void setButtonNextPrevState(ModuleEntity module) {
+        if (getActivity() != null) {
+            if (module.getPosition() == 0) {
+                btnPrev.setEnabled(false);
+                btnNext.setEnabled(true);
+            } else if (module.getPosition() == viewModel.getModuleSize() - 1) {
+                btnPrev.setEnabled(true);
+                btnNext.setEnabled(false);
+            } else {
+                btnPrev.setEnabled(true);
+                btnNext.setEnabled(true);
+            }
+        }
     }
 
 }

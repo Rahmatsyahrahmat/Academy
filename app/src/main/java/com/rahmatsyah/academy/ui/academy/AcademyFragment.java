@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.rahmatsyah.academy.R;
 import com.rahmatsyah.academy.data.source.local.entity.CourseEntity;
@@ -67,10 +68,24 @@ public class AcademyFragment extends Fragment {
 
             academyAdapter = new AcademyAdapter(getActivity());
 
-            viewModel.getCourses().observe(this, courses -> {
-                progressBar.setVisibility(View.GONE);
-                academyAdapter.setListCourses(courses);
-                academyAdapter.notifyDataSetChanged();
+            viewModel.setUsername("Dicoding");
+            viewModel.courses.observe(this,courses->{
+                if (courses!=null){
+                    switch (courses.status){
+                        case LOADING:
+                            progressBar.setVisibility(View.VISIBLE);
+                            break;
+                        case SUCCESS:
+                            progressBar.setVisibility(View.GONE);
+                            academyAdapter.setListCourses(courses.data);
+                            academyAdapter.notifyDataSetChanged();
+                            break;
+                        case ERROR:
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(getContext(),"Terjadi Kesalahan",Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+                }
             });
 
             academyAdapter.setListCourses(courses);

@@ -2,10 +2,14 @@ package com.rahmatsyah.academy.data.source.remote;
 
 import android.os.Handler;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import com.rahmatsyah.academy.data.source.remote.response.ContentResponse;
 import com.rahmatsyah.academy.data.source.remote.response.CourseResponse;
 import com.rahmatsyah.academy.data.source.remote.response.ModuleResponse;
 import com.rahmatsyah.academy.utils.EspressoIdlingResource;
+import com.rahmatsyah.academy.utils.JsonHelper;
 
 import java.util.List;
 
@@ -26,48 +30,49 @@ public class RemoteRepository {
         return INSTANCE;
     }
 
-    public void getAllCourses(LoadCoursesCallback callback) {
+    public LiveData<ApiResponse<List<CourseResponse>>> getAllCoursesAsLiveData() {
         EspressoIdlingResource.increment();
+
+        MutableLiveData<ApiResponse<List<CourseResponse>>> coursesResult = new MutableLiveData<>();
+
         Handler handler = new Handler();
         handler.postDelayed(() -> {
-            callback.onAllCoursesReceived(jsonHelper.loadCourses());
-            EspressoIdlingResource.decrement();
+            coursesResult.setValue(ApiResponse.success(jsonHelper.loadCourses()));
+            if (!EspressoIdlingResource.getEspressoIdlingResource().isIdleNow()){
+                EspressoIdlingResource.decrement();
+            }
         }, SERVICE_LATENCY_IN_MILLIS);
+        return coursesResult;
     }
 
-    public void getModules(String courseId, LoadModulesCallback callback) {
+    public LiveData<ApiResponse<List<ModuleResponse>>> getModulesByCourseAsLiveData(String courseId) {
         EspressoIdlingResource.increment();
+
+        MutableLiveData<ApiResponse<List<ModuleResponse>>> modulesResult = new MutableLiveData<>();
+
         Handler handler = new Handler();
         handler.postDelayed(() -> {
-            callback.onAllModulesReceived(jsonHelper.loadModule(courseId));
-            EspressoIdlingResource.decrement();
+            modulesResult.setValue(ApiResponse.success(jsonHelper.loadModule(courseId)));
+            if (!EspressoIdlingResource.getEspressoIdlingResource().isIdleNow()) {
+                EspressoIdlingResource.decrement();
+            }
         }, SERVICE_LATENCY_IN_MILLIS);
+        return modulesResult;
     }
 
-    public void getContent(String moduleId, GetContentCallback callback) {
+    public LiveData<ApiResponse<ContentResponse>> getContentAsLiveData(String moduleId) {
         EspressoIdlingResource.increment();
+
+        MutableLiveData<ApiResponse<ContentResponse>> contentResult = new MutableLiveData<>();
+
         Handler handler = new Handler();
         handler.postDelayed(() -> {
-            callback.onContentReceived(jsonHelper.loadContent(moduleId));
-            EspressoIdlingResource.decrement();
+            contentResult.setValue(ApiResponse.success(jsonHelper.loadContent(moduleId)));
+            if (!EspressoIdlingResource.getEspressoIdlingResource().isIdleNow()) {
+                EspressoIdlingResource.decrement();
+            }
         }, SERVICE_LATENCY_IN_MILLIS);
+        return contentResult;
     }
 
-    public interface LoadCoursesCallback {
-        void onAllCoursesReceived(List<CourseResponse> courseResponses);
-
-        void onDataNotAvailable();
-    }
-
-    public interface LoadModulesCallback {
-        void onAllModulesReceived(List<ModuleResponse> moduleResponses);
-
-        void onDataNotAvailable();
-    }
-
-    public interface GetContentCallback {
-        void onContentReceived(ContentResponse contentResponse);
-
-        void onDataNotAvailable();
-    }
 }
