@@ -7,6 +7,7 @@ import androidx.lifecycle.Observer;
 import com.rahmatsyah.academy.data.source.AcademyRepository;
 import com.rahmatsyah.academy.data.source.local.entity.CourseEntity;
 import com.rahmatsyah.academy.utils.FakeDataDummy;
+import com.rahmatsyah.academy.vo.Resource;
 
 import org.junit.After;
 import org.junit.Before;
@@ -28,6 +29,8 @@ public class AcademyViewModelTest {
     private AcademyViewModel viewModel;
     private AcademyRepository academyRepository = mock(AcademyRepository.class);
 
+    private String USERNAME = "Dicoding";
+
     @Before
     public void setUp() {
         viewModel = new AcademyViewModel(academyRepository);
@@ -35,17 +38,18 @@ public class AcademyViewModelTest {
 
     @Test
     public void getCourses() {
-        ArrayList<CourseEntity> dummyCourses = FakeDataDummy.generateDummyCourses();
+        Resource<List<CourseEntity>> resource = Resource.success(FakeDataDummy.generateDummyCourses());
+        MutableLiveData<Resource<List<CourseEntity>>> dummyCourses = new MutableLiveData<>();
+        dummyCourses.setValue(resource);
 
-        MutableLiveData<List<CourseEntity>> courses = new MutableLiveData<>();
-        courses.setValue(dummyCourses);
+        when(academyRepository.getAllCourses()).thenReturn(dummyCourses);
 
-        when(academyRepository.getAllCourses()).thenReturn(courses);
+        Observer<Resource<List<CourseEntity>>> observer = mock(Observer.class);
 
-        Observer<List<CourseEntity>> observer = mock(Observer.class);
+        viewModel.setUsername(USERNAME);
 
-        viewModel.getCourses().observeForever(observer);
+        viewModel.courses.observeForever(observer);
 
-        verify(observer).onChanged(dummyCourses);
+        verify(observer).onChanged(resource);
     }
 }

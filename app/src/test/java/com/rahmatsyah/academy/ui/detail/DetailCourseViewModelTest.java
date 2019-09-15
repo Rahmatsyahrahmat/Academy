@@ -6,8 +6,10 @@ import androidx.lifecycle.Observer;
 
 import com.rahmatsyah.academy.data.source.AcademyRepository;
 import com.rahmatsyah.academy.data.source.local.entity.CourseEntity;
+import com.rahmatsyah.academy.data.source.local.entity.CourseWithModule;
 import com.rahmatsyah.academy.data.source.local.entity.ModuleEntity;
 import com.rahmatsyah.academy.utils.FakeDataDummy;
+import com.rahmatsyah.academy.vo.Resource;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,30 +42,19 @@ public class DetailCourseViewModelTest {
     }
 
     @Test
-    public void getCourse() {
-        MutableLiveData<CourseEntity> courseEntities = new MutableLiveData<>();
-        courseEntities.setValue(dummyCourse);
+    public void getCourseWithModule() {
+        Resource<CourseWithModule> resource = Resource.success(FakeDataDummy.generateDummyCourseWithModules(dummyCourse,true));
+        MutableLiveData<Resource<CourseWithModule>> courseEntities = new MutableLiveData<>();
+        courseEntities.setValue(resource);
 
         when(academyRepository.getCourseWithModules(courseId)).thenReturn(courseEntities);
 
-        Observer<CourseEntity> observer = mock(Observer.class);
+        Observer<Resource<CourseWithModule>> observer = mock(Observer.class);
 
-        viewModel.getCourse().observeForever(observer);
+        viewModel.courseModule.observeForever(observer);
 
-        verify(observer).onChanged(dummyCourse);
+        verify(observer).onChanged(resource);
     }
 
-    @Test
-    public void getModules() {
-        MutableLiveData<List<ModuleEntity>> moduleEntities = new MutableLiveData<>();
-        moduleEntities.setValue(dummyModules);
 
-        when(academyRepository.getAllModulesByCourse(courseId)).thenReturn(moduleEntities);
-
-        Observer<List<ModuleEntity>> observer = mock(Observer.class);
-
-        viewModel.getModules().observeForever(observer);
-
-        verify(observer).onChanged(dummyModules);
-    }
 }

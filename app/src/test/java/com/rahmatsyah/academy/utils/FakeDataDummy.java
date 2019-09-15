@@ -1,6 +1,8 @@
 package com.rahmatsyah.academy.utils;
 
+import com.rahmatsyah.academy.data.source.local.entity.ContentEntity;
 import com.rahmatsyah.academy.data.source.local.entity.CourseEntity;
+import com.rahmatsyah.academy.data.source.local.entity.CourseWithModule;
 import com.rahmatsyah.academy.data.source.local.entity.ModuleEntity;
 import com.rahmatsyah.academy.data.source.remote.response.ContentResponse;
 import com.rahmatsyah.academy.data.source.remote.response.CourseResponse;
@@ -172,5 +174,25 @@ public class FakeDataDummy {
 
     public static ContentResponse generateRemoteDummyContent(String moduleId) {
         return new ContentResponse(moduleId, "This is a dummy content");
+    }
+
+    public static CourseWithModule generateDummyCourseWithModules(CourseEntity course, boolean bookmarked) {
+        CourseWithModule courseWithModule = new CourseWithModule();
+        courseWithModule.courseEntity = course;
+        courseWithModule.courseEntity.setBookmarked(bookmarked);
+        courseWithModule.moduleEntities = generateDummyModules(course.getCourseId());
+        return courseWithModule;
+    }
+
+    public static ContentEntity generateDummyContent(String moduleId) {
+
+        return new ContentEntity("This is a dummy content");
+    }
+
+    public static ModuleEntity generateDummyModuleWithContent(String courseId) {
+        ModuleEntity moduleEntity = generateDummyModules(courseId).get(0);
+        moduleEntity.contentEntity = generateDummyContent(moduleEntity.getModuleId());
+
+        return moduleEntity;
     }
 }
