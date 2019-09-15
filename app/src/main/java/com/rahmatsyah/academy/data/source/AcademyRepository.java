@@ -3,6 +3,8 @@ package com.rahmatsyah.academy.data.source;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.paging.LivePagedListBuilder;
+import androidx.paging.PagedList;
 
 import com.rahmatsyah.academy.data.source.local.LocalRepository;
 import com.rahmatsyah.academy.data.source.local.entity.ContentEntity;
@@ -154,15 +156,15 @@ public class AcademyRepository implements AcademyDataSource {
     }
 
     @Override
-    public LiveData<Resource<List<CourseEntity>>> getBookmarkCourses() {
-        return new NetworkBoundResource<List<CourseEntity>, List<CourseResponse>>(appExecutors) {
+    public LiveData<Resource<PagedList<CourseEntity>>> getBookmarkCourses() {
+        return new NetworkBoundResource<PagedList<CourseEntity>, List<CourseResponse>>(appExecutors) {
             @Override
-            protected LiveData<List<CourseEntity>> loadFromDB() {
-                return localRepository.getBookmarkedCourses();
+            protected LiveData<PagedList<CourseEntity>> loadFromDB() {
+                return new LivePagedListBuilder<>(localRepository.getBookmarkedCourses(),20).build();
             }
 
             @Override
-            protected Boolean shouldFetch(List<CourseEntity> data) {
+            protected Boolean shouldFetch(PagedList<CourseEntity> data) {
                 return false;
             }
 

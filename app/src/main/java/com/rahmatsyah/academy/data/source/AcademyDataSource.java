@@ -1,6 +1,7 @@
 package com.rahmatsyah.academy.data.source;
 
 import androidx.lifecycle.LiveData;
+import androidx.paging.PagedList;
 
 import com.rahmatsyah.academy.data.source.local.entity.CourseEntity;
 import com.rahmatsyah.academy.data.source.local.entity.CourseWithModule;
@@ -17,7 +18,7 @@ public interface AcademyDataSource {
 
     LiveData<Resource<List<ModuleEntity>>> getAllModulesByCourse(String courseId);
 
-    LiveData<Resource<List<CourseEntity>>> getBookmarkCourses();
+    LiveData<Resource<PagedList<CourseEntity>>> getBookmarkCourses();
 
     LiveData<Resource<ModuleEntity>> getContent(String courseId);
 

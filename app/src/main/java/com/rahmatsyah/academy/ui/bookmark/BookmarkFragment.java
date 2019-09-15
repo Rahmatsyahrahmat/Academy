@@ -9,6 +9,7 @@ import androidx.core.app.ShareCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.rahmatsyah.academy.R;
 import com.rahmatsyah.academy.data.source.local.entity.CourseEntity;
 import com.rahmatsyah.academy.viewmodel.ViewModelFactory;
@@ -29,12 +31,36 @@ import java.util.List;
  * A simple {@link Fragment} subclass.
  */
 public class BookmarkFragment extends Fragment implements BookmarkFragmentCallback {
-    private BookmarkAdapter adapter;
+    private BookmarkPagedAdapter adapter;
     private RecyclerView rvBookmark;
     private ProgressBar progressBar;
 
     private BookmarkViewModel viewModel;
     private List<CourseEntity> courses;
+
+    private ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.Callback() {
+        @Override
+        public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+            return makeMovementFlags(0,ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT);
+        }
+
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            return true;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            if (getView()!=null){
+                int swipePosition = viewHolder.getAdapterPosition();
+                CourseEntity courseEntity = adapter.getItemById(swipePosition);
+                viewModel.setBookmark(courseEntity);
+                Snackbar snackbar = Snackbar.make(getView(),R.string.message_undo,Snackbar.LENGTH_LONG);
+                snackbar.setAction(R.string.message_ok, v-> viewModel.setBookmark(courseEntity));
+                snackbar.show();
+            }
+        }
+    });
 
     public BookmarkFragment() {
         // Required empty public constructor
@@ -78,7 +104,7 @@ public class BookmarkFragment extends Fragment implements BookmarkFragmentCallba
             progressBar.setVisibility(View.VISIBLE);
             viewModel = obtainViewModel(getActivity());
 
-            adapter = new BookmarkAdapter(getActivity(), this);
+            adapter = new BookmarkPagedAdapter(this);
 
             viewModel.getBookmarks().observe(this, courses -> {
                 if (courses != null) {
@@ -88,8 +114,9 @@ public class BookmarkFragment extends Fragment implements BookmarkFragmentCallba
                             break;
                         case SUCCESS:
                             progressBar.setVisibility(View.GONE);
-                            adapter.setListCourses(courses.data);
+                            adapter.submitList(courses.data);
                             adapter.notifyDataSetChanged();
+                            break;
                         case ERROR:
                             progressBar.setVisibility(View.GONE);
                             Toast.makeText(getContext(), "Terjadi kesalahan", Toast.LENGTH_SHORT).show();
@@ -101,6 +128,8 @@ public class BookmarkFragment extends Fragment implements BookmarkFragmentCallba
             rvBookmark.setLayoutManager(new LinearLayoutManager(getContext()));
             rvBookmark.setHasFixedSize(true);
             rvBookmark.setAdapter(adapter);
+
+            itemTouchHelper.attachToRecyclerView(rvBookmark);
         }
     }
 

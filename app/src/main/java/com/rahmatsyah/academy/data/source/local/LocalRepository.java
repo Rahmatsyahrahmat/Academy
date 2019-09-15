@@ -1,6 +1,7 @@
 package com.rahmatsyah.academy.data.source.local;
 
 import androidx.lifecycle.LiveData;
+import androidx.paging.DataSource;
 
 import com.rahmatsyah.academy.data.source.local.entity.CourseEntity;
 import com.rahmatsyah.academy.data.source.local.entity.CourseWithModule;
@@ -30,7 +31,7 @@ public class LocalRepository {
         return academyDao.getCourses();
     }
 
-    public LiveData<List<CourseEntity>> getBookmarkedCourses() {
+    public DataSource.Factory<Integer, CourseEntity> getBookmarkedCourses() {
         return academyDao.getBookmarkedCourse();
     }
 
