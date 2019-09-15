@@ -1,6 +1,7 @@
 package com.rahmatsyah.academy.ui;
 
 import androidx.test.espresso.IdlingRegistry;
+import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.rule.ActivityTestRule;
 
@@ -50,10 +51,22 @@ public class AcademyTest {
         onView(withId(R.id.btn_start)).check(matches(isDisplayed()));
         onView(withId(R.id.btn_start)).perform(click());
 
-        onView(withId(R.id.frame_container)).check(matches(isDisplayed()));
-        onView(withId(R.id.rv_module)).check(matches(isDisplayed()));
-        onView(withId(R.id.rv_module)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+        try {
+            onView(withId(R.id.frame_container)).check(matches(isDisplayed()));
 
-        onView(withId(R.id.web_view)).check(matches(isDisplayed()));
+            onView(withId(R.id.rv_module)).check(matches(isDisplayed()));
+            onView(withId(R.id.rv_module)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+
+            onView(withId(R.id.web_view)).check(matches(isDisplayed()));
+        } catch (NoMatchingViewException e) {
+            onView(withId(R.id.frame_list)).check(matches(isDisplayed()));
+
+            onView(withId(R.id.rv_module)).check(matches(isDisplayed()));
+            onView(withId(R.id.rv_module)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+
+            onView(withId(R.id.web_view)).check(matches(isDisplayed()));
+            onView(withId(R.id.web_view)).check(matches(isDisplayed()));
+        }
+
     }
 }

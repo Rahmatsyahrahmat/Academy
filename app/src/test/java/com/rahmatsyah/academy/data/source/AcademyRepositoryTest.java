@@ -2,6 +2,8 @@ package com.rahmatsyah.academy.data.source;
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
+import androidx.paging.DataSource;
+import androidx.paging.PagedList;
 
 import com.rahmatsyah.academy.data.source.local.LocalRepository;
 import com.rahmatsyah.academy.data.source.local.entity.CourseEntity;
@@ -14,6 +16,7 @@ import com.rahmatsyah.academy.data.source.remote.response.ModuleResponse;
 import com.rahmatsyah.academy.utils.FakeDataDummy;
 import com.rahmatsyah.academy.utils.InstantAppExecutor;
 import com.rahmatsyah.academy.utils.LiveDataTestUtil;
+import com.rahmatsyah.academy.utils.PageListUtil;
 import com.rahmatsyah.academy.vo.Resource;
 
 import org.junit.After;
@@ -26,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,13 +37,14 @@ public class AcademyRepositoryTest {
     @Rule
     public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
-    private LocalRepository local = Mockito.mock(LocalRepository.class);
-    private RemoteRepository remote = Mockito.mock(RemoteRepository.class);
-    private InstantAppExecutor instantAppExecutors = Mockito.mock(InstantAppExecutor.class);
+    private LocalRepository local = mock(LocalRepository.class);
+    private RemoteRepository remote = mock(RemoteRepository.class);
+    private InstantAppExecutor instantAppExecutors = mock(InstantAppExecutor.class);
     private FakeAcademyRepository academyRepository = new FakeAcademyRepository(local, remote, instantAppExecutors);
 
 
     private ArrayList<CourseResponse> courseResponses = FakeDataDummy.generateRemoteDummyCourses();
+    private List<CourseEntity> courseEntities = FakeDataDummy.generateDummyCourses();
     private String courseId = courseResponses.get(0).getId();
     private ArrayList<ModuleResponse> moduleResponses = FakeDataDummy.generateRemoteDummyModules(courseId);
     private String moduleId = moduleResponses.get(0).getModuleId();
@@ -86,16 +91,15 @@ public class AcademyRepositoryTest {
 
     @Test
     public void getBookmarkedCourses() {
-        MutableLiveData<List<CourseEntity>> dummyCourses = new MutableLiveData<>();
-        dummyCourses.setValue(FakeDataDummy.generateDummyCourses());
+        DataSource.Factory<Integer, CourseEntity> dataSource = mock(DataSource.Factory.class);
 
-        when(local.getBookmarkedCourses()).thenReturn(dummyCourses);
-
-        Resource<List<CourseEntity>> result = LiveDataTestUtil.getValue(academyRepository.getBookmarkCourses());
+        when(local.getBookmarkedCourses()).thenReturn(dataSource);
+        academyRepository.getBookmarkCourses();
+        Resource<PagedList<CourseEntity>> result = Resource.success(PageListUtil.mockPagedList(courseEntities));
 
         verify(local).getBookmarkedCourses();
         assertNotNull(result.data);
-        assertEquals(courseResponses.size(), result.data.size());
+        assertEquals(courseEntities.size(),result.data.size());
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.rahmatsyah.academy.ui.bookmark;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
+import androidx.paging.PagedList;
 
 import com.rahmatsyah.academy.data.source.AcademyRepository;
 import com.rahmatsyah.academy.data.source.local.entity.CourseEntity;
@@ -36,17 +37,18 @@ public class BookmarkViewModelTest {
 
     @Test
     public void getBookmark() {
-        Resource<List<CourseEntity>> resource = Resource.success(FakeDataDummy.generateDummyCourses());
 
-        MutableLiveData<Resource<List<CourseEntity>>> dummyCourses = new MutableLiveData<>();
-        dummyCourses.setValue(resource);
+        MutableLiveData<Resource<PagedList<CourseEntity>>> dummyCourses = new MutableLiveData<>();
+        PagedList<CourseEntity> pagedList = mock(PagedList.class);
+
+        dummyCourses.setValue(Resource.success(pagedList));
 
         when(academyRepository.getBookmarkCourses()).thenReturn(dummyCourses);
 
-        Observer<Resource<List<CourseEntity>>> observer = mock(Observer.class);
+        Observer<Resource<PagedList<CourseEntity>>> observer = mock(Observer.class);
 
         viewModel.getBookmarks().observeForever(observer);
 
-        verify(observer).onChanged(resource);
+        verify(observer).onChanged(Resource.success(pagedList));
     }
 }
